@@ -1,24 +1,32 @@
-import express from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import 'dotenv/config';
 import { connectToMongoDB, startServer } from './utils.js';
 import { usersRouter } from './routes/users.js';
 import { postsRouter } from './routes/posts.js';
 import cors from 'cors';
+import helmet from 'helmet';
 // create a new express application
 const app = express();
 
-// express.json() is a middleware that parses the request body and makes it available in req.body
-app.use(express.json());
-// express.urlencoded() is a middleware that parses the request body and makes it available in req.body
-// extended: true means that the parser will support nested objects and arrays
-app.use(express.urlencoded({ extended: true }));
+// helmet is a middleware that helps to secure the express application by setting various HTTP headers
+app.use(helmet());
 
+// cors is a middleware that allows the express application to accept requests from the frontend specifically
+// the origin is the URL of the frontend
+// credentials: true means that the browser will send the credentials (cookies, authentication tokens, etc.) to the backend
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
   }),
 );
+
+// express.json() is a middleware that parses the request body and makes it available in req.body
+app.use(express.json());
+
+// express.urlencoded() is a middleware that parses the request body and makes it available in req.body
+// extended: true means that the parser will support nested objects and arrays
+app.use(express.urlencoded({ extended: true }));
 
 // create a new route that returns a JSON object with a key of ok and a value of true
 app.get('/health', (req, res) => {
@@ -28,6 +36,15 @@ app.get('/health', (req, res) => {
 // initialize routers
 app.use('/users', usersRouter);
 app.use('/posts', postsRouter);
+
+// if the route is not found, return a 404 error
+app.use((req, res) => res.status(404).json({ error: 'Not found' }));
+
+// error handler (must be last)
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 // get the port and uri from the environment variables
 const port = Number(process.env.PORT) || 3000;
