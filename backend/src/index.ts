@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { connectToMongoDB, startServer } from './utils.js';
 import { usersRouter } from './routes/users.js';
 import { postsRouter } from './routes/posts.js';
+import cors from 'cors';
 // create a new express application
 const app = express();
 
@@ -11,6 +12,13 @@ app.use(express.json());
 // express.urlencoded() is a middleware that parses the request body and makes it available in req.body
 // extended: true means that the parser will support nested objects and arrays
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  }),
+);
 
 // create a new route that returns a JSON object with a key of ok and a value of true
 app.get('/health', (req, res) => {
