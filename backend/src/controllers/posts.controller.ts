@@ -1,15 +1,15 @@
 import type { Request, Response } from 'express';
 import { PostModel } from '../models/Post.model.js';
 import { UserModel } from '../models/User.model.js';
+import type { CreatePostBody, PostIdParams, UpdatePostBody } from '../types/posts.types.js';
 
 // CREATE post + link into user.posts
-export async function createPost(req: Request, res: Response) {
+export async function createPost(
+  req: Request<Record<string, never>, unknown, CreatePostBody>,
+  res: Response,
+) {
   try {
-    const { createdBy, title, content } = req.body as {
-      createdBy: string;
-      title: string;
-      content: string;
-    };
+    const { createdBy, title, content } = req.body;
 
     const user = await UserModel.findById(createdBy);
     if (!user) return res.status(404).json({ message: 'user not found' });
@@ -40,7 +40,7 @@ export async function listPosts(_req: Request, res: Response) {
 }
 
 // READ one
-export async function getPostById(req: Request, res: Response) {
+export async function getPostById(req: Request<PostIdParams>, res: Response) {
   try {
     const { id } = req.params;
     const post = await PostModel.findById(id).populate('createdBy', 'email name');
@@ -53,10 +53,13 @@ export async function getPostById(req: Request, res: Response) {
 }
 
 // UPDATE (title/content)
-export async function updatePost(req: Request, res: Response) {
+export async function updatePost(
+  req: Request<PostIdParams, unknown, UpdatePostBody>,
+  res: Response,
+) {
   try {
     const { id } = req.params;
-    const { title, content } = req.body as { title?: string; content?: string };
+    const { title, content } = req.body;
     const updated = await PostModel.findByIdAndUpdate(
       id,
       { $set: { ...(title ? { title } : {}), ...(content ? { content } : {}) } },
@@ -71,7 +74,7 @@ export async function updatePost(req: Request, res: Response) {
 }
 
 // DELETE post + remove from user.posts
-export async function deletePost(req: Request, res: Response) {
+export async function deletePost(req: Request<PostIdParams>, res: Response) {
   try {
     const { id } = req.params;
     const post = await PostModel.findById(id);
