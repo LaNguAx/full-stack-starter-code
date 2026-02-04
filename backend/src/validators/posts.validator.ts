@@ -1,12 +1,10 @@
 import type { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
+import type { CreatePostBody, UpdatePostBody } from '../types/posts.types.js';
+import type { ObjectIdParams } from '../types/common.types.js';
 
 export function validateCreatePost(req: Request, res: Response, next: NextFunction) {
-  const { createdBy, title, content } = req.body as {
-    createdBy?: string;
-    title?: string;
-    content?: string;
-  };
+  const { createdBy, title, content } = req.body as Partial<CreatePostBody>;
 
   if (!createdBy || !title || !content) {
     return res.status(400).json({ message: 'createdBy, title, content are required' });
@@ -19,13 +17,13 @@ export function validateCreatePost(req: Request, res: Response, next: NextFuncti
 }
 
 export function validatePostId(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
+  const { id } = req.params as Partial<ObjectIdParams>;
   if (!mongoose.isValidObjectId(id)) return res.status(400).json({ message: 'invalid id' });
   return next();
 }
 
 export function validateUpdatePost(req: Request, res: Response, next: NextFunction) {
-  const { title, content } = req.body as { title?: string; content?: string };
+  const { title, content } = req.body as Partial<UpdatePostBody>;
   if (!title && !content) {
     return res.status(400).json({ message: 'provide title and/or content' });
   }

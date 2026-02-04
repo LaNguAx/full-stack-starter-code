@@ -1,5 +1,7 @@
 import type { Request, Response } from 'express';
 import { UserModel } from '../models/User.model.js';
+import type { ObjectIdParams } from '../types/common.types.js';
+import type { CreateUserBody } from '../types/user.types.js';
 
 export async function listUsers(_req: Request, res: Response) {
   try {
@@ -12,7 +14,7 @@ export async function listUsers(_req: Request, res: Response) {
 
 export async function getUserById(req: Request, res: Response) {
   try {
-    const { id } = req.params;
+    const { id } = req.params as ObjectIdParams;
     const user = await UserModel.findById(id);
 
     if (!user) {
@@ -27,7 +29,7 @@ export async function getUserById(req: Request, res: Response) {
 
 export async function createUser(req: Request, res: Response) {
   try {
-    const { email, name } = req.body as { email: string; name: string };
+    const { email, name } = req.body as CreateUserBody;
     const created = await UserModel.create({ email, name, posts: [] });
     return res.status(201).json(created);
   } catch (err: any) {

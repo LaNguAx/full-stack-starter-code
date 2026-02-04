@@ -1,15 +1,13 @@
 import type { Request, Response } from 'express';
 import { PostModel } from '../models/Post.model.js';
 import { UserModel } from '../models/User.model.js';
+import type { CreatePostBody, UpdatePostBody } from '../types/posts.types.js';
+import type { ObjectIdParams } from '../types/common.types.js';
 
 // CREATE post + link into user.posts
 export async function createPost(req: Request, res: Response) {
   try {
-    const { createdBy, title, content } = req.body as {
-      createdBy: string;
-      title: string;
-      content: string;
-    };
+    const { createdBy, title, content } = req.body as CreatePostBody;
 
     const user = await UserModel.findById(createdBy);
     if (!user) return res.status(404).json({ message: 'user not found' });
@@ -42,7 +40,7 @@ export async function listPosts(_req: Request, res: Response) {
 // READ one
 export async function getPostById(req: Request, res: Response) {
   try {
-    const { id } = req.params;
+    const { id } = req.params as ObjectIdParams;
     const post = await PostModel.findById(id).populate('createdBy', 'email name');
     if (!post) return res.status(404).json({ message: 'post not found' });
 
@@ -55,8 +53,8 @@ export async function getPostById(req: Request, res: Response) {
 // UPDATE (title/content)
 export async function updatePost(req: Request, res: Response) {
   try {
-    const { id } = req.params;
-    const { title, content } = req.body as { title?: string; content?: string };
+    const { id } = req.params as ObjectIdParams;
+    const { title, content } = req.body as Partial<UpdatePostBody>;
     const updated = await PostModel.findByIdAndUpdate(
       id,
       { $set: { ...(title ? { title } : {}), ...(content ? { content } : {}) } },
@@ -73,7 +71,7 @@ export async function updatePost(req: Request, res: Response) {
 // DELETE post + remove from user.posts
 export async function deletePost(req: Request, res: Response) {
   try {
-    const { id } = req.params;
+    const { id } = req.params as ObjectIdParams;
     const post = await PostModel.findById(id);
     if (!post) return res.status(404).json({ message: 'post not found' });
 
