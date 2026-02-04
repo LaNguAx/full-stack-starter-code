@@ -43,6 +43,7 @@ full-stack-starter-code/
       utils.ts           # Mongo connection + startServer helper
       models/            # Mongoose schemas/models
       routes/            # Express routers
+      validators/        # Express request validation middleware
   frontend/
     src/
       main.tsx           # React entry + Redux Provider
@@ -201,9 +202,9 @@ Note: there is **no Socket.IO server** implemented in the backend in this repo.
 
 ### Data models
 
-- `backend/src/models/User.ts`
+- `backend/src/models/User.model.ts`
   - `email` (unique), `name`, `posts: ObjectId[]` referencing Post
-- `backend/src/models/Post.ts`
+- `backend/src/models/Post.model.ts`
   - `createdBy: ObjectId` referencing User, `title`, `content`
 
 Relationship:
@@ -219,49 +220,54 @@ Relationship:
 
 - Returns `{ ok: true }`
 
-### Users: `/users` (`backend/src/routes/users.ts`)
+### Users: `/users` (`backend/src/routes/users.routes.ts`)
 
 - **GET `/users`**
   - 200: list all users
   - 500: server error
 - **GET `/users/:id`**
   - 200: user
-  - 400: invalid ObjectId
+  - 400: invalid ObjectId (`{ message: "invalid user id" }`)
   - 404: not found
   - 500: server error
 - **POST `/users`**
   - Body: `{ email: string, name: string }`
   - 201: created user
   - 400: missing/invalid fields
+    - `email` and `name` are required
+    - `email` and `name` must be strings
+    - `email` and `name` cannot be empty (whitespace-only is rejected)
   - 409: duplicate email
   - 500: server error
 
-### Posts: `/posts` (`backend/src/routes/posts.ts`)
+### Posts: `/posts` (`backend/src/routes/posts.routes.ts`)
 
 - **GET `/posts`**
   - 200: list posts (sorted newest first), `createdBy` populated with user `email` + `name`
   - 500: server error
 - **GET `/posts/:id`**
   - 200: post (with populated `createdBy`)
-  - 400: invalid ObjectId
+  - 400: invalid ObjectId (`{ message: "invalid id" }`)
   - 404: not found
   - 500: server error
 - **POST `/posts`**
   - Body: `{ createdBy: string, title: string, content: string }`
   - 201: created post
   - 400: missing fields / invalid `createdBy`
+    - `createdBy`, `title`, `content` are required
+    - `createdBy` must be a valid ObjectId (`{ message: "createdBy is not a valid ObjectId" }`)
   - 404: user not found
   - 500: server error
   - Side effect: pushes the post id into the owning user’s `posts[]`
 - **PATCH `/posts/:id`**
   - Body: `{ title?: string, content?: string }` (at least one required)
   - 200: updated post
-  - 400: invalid ObjectId / no fields provided
+  - 400: invalid ObjectId / no fields provided (`{ message: "provide title and/or content" }`)
   - 404: not found
   - 500: server error
 - **DELETE `/posts/:id`**
   - 204: deleted
-  - 400: invalid ObjectId
+  - 400: invalid ObjectId (`{ message: "invalid id" }`)
   - 404: not found
   - 500: server error
   - Side effect: pulls the post id from the owning user’s `posts[]`
