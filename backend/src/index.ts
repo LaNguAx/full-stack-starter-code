@@ -1,8 +1,8 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import 'dotenv/config';
 import { connectToMongoDB, startServer } from './utils.js';
-import { usersRouter } from './routes/users.js';
-import { postsRouter } from './routes/posts.js';
+import { usersRouter } from './routes/users.routes.js';
+import { postsRouter } from './routes/posts.routes.js';
 import cors from 'cors';
 import helmet from 'helmet';
 // create a new express application
@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // create a new route that returns a JSON object with a key of ok and a value of true
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
@@ -38,10 +38,10 @@ app.use('/users', usersRouter);
 app.use('/posts', postsRouter);
 
 // if the route is not found, return a 404 error
-app.use((req, res) => res.status(404).json({ error: 'Not found' }));
+app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
 // error handler (must be last)
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });
 });
@@ -56,7 +56,7 @@ async function main() {
 
   await connectToMongoDB(uri);
 
-  const server = await startServer(app, port);
+  await startServer(app, port);
   console.log(`✅ Server is running on port ${port}! 🚀`);
 }
 
