@@ -30,6 +30,7 @@ This README focuses on **what technologies are used** and **how the frontend/bac
 - **CORS**: `cors` middleware (origin controlled by env var)
 - **Env loading**: `dotenv/config`
 - **Dev runner**: `tsx` (including watch mode)
+- **Tooling**: ESLint (type-aware) + Prettier
 
 ---
 
@@ -293,6 +294,8 @@ Relationship:
 - `npm run start`: run once (`tsx src/index.ts`)
 - `npm run build`: compile TS (`tsc`)
 - `npm run typecheck`: typecheck only (`tsc --noEmit`)
+- `npm run lint`: run ESLint
+- `npm run lint:fix`: run ESLint with auto-fix
 
 ### Frontend (`frontend/package.json`)
 
